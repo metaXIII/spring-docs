@@ -7,6 +7,8 @@ import com.metaxiii.fr.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,41 +24,52 @@ public class EmployeeController {
     private final EmployeeModelAssembler assembler;
 
     @GetMapping("employees")
-    public CollectionModel<EntityModel<Employee>> all() {
+    public CollectionModel<EntityModel<Employee>> getAllEmployees() {
         List<EntityModel<Employee>> employees = repository.findAll()
                 .stream()
-                .map(employee -> EntityModel.of(employee, linkTo(methodOn(EmployeeController.class).getEmployee(employee.getId())).withSelfRel(),
-                        linkTo(methodOn(EmployeeController.class).all()).withRel("employees"))).toList();
-        return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).all()).withSelfRel());
+                .map(assembler::toModel)
+                .toList();
+        return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).getAllEmployees()).withSelfRel());
     }
 
     @PostMapping("employees")
-    public Employee newEmployee(@RequestBody Employee employee) {
-        return repository.save(employee);
+    public ResponseEntity<EntityModel<Employee>> newEmployee(@RequestBody Employee employee) {
+        EntityModel<Employee> entityModel = assembler.toModel(repository.save(employee));
+        assembler.toModel(repository.save(employee));
+        return ResponseEntity
+                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(entityModel);
     }
 
     @GetMapping("employees/{id}")
     public EntityModel<Employee> getEmployee(@PathVariable long id) {
-        Employee employee = repository.findById(id).orElseThrow(
-                () -> new EmployeeException(EMPLOYEE_NOT_FOUND, id));
-        return assembler.toModel(employee);
+        return repository.findById(id)
+                .map(assembler::toModel)
+                .orElseThrow(
+                        () -> new EmployeeException(EMPLOYEE_NOT_FOUND, id));
     }
 
     @PutMapping("employees/{id}")
-    Employee replaceEmployee(@RequestBody Employee put, @PathVariable long id) {
-        return repository.findById(id)
+    public ResponseEntity<EntityModel<Employee>> replaceEmployee(@RequestBody Employee put, @PathVariable long id) {
+        EntityModel<Employee> employeeEntityModel = assembler.toModel(repository.findById(id)
                 .map(employee -> {
-                    employee.setName(put.getName());
+                    employee.setLastName(put.getLastName());
+                    employee.setFirstName(put.getFirstName());
                     employee.setRole(put.getRole());
                     return repository.save(employee);
-                }).orElseGet(() -> {
+                })
+                .orElseGet(() -> {
                     put.setId(id);
                     return repository.save(put);
-                });
+                }));
+        return ResponseEntity
+                .created(employeeEntityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(employeeEntityModel);
     }
 
     @DeleteMapping("employees/{id}")
-    void deleteEmployee(@PathVariable long id) {
+    ResponseEntity<Void> deleteEmployee(@PathVariable long id) {
         repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
