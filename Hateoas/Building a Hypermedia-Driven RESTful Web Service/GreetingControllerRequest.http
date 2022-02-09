@@ -1,0 +1,35 @@
+### Print Hello World
+GET http://localhost:8080/greeting
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    })
+
+    client.test("Is Hal resource" , () => {
+        client.assert(response.contentType.mimeType === "application/hal+json", "This is not an HAL Resouce")
+    })
+
+    client.test("Get result", () => {
+        client.assert(response.body["content"] === "Hello World!", "test failed")
+    })
+%}
+
+### Print Name
+GET http://localhost:8080/greeting?name=meta
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    })
+
+    client.test("Is Hal resource" , () => {
+        client.assert(response.contentType.mimeType === "application/hal+json", "This is not an HAL Resouce")
+    })
+
+    client.test("Get result", () => {
+        client.assert(response.body["content"] === "Hello meta!", "test failed")
+    })
+%}
+
+

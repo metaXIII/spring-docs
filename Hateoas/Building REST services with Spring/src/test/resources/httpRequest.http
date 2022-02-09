@@ -1,0 +1,22 @@
+POST {{host}}/employees
+Content-Type: application/json
+
+{
+  "firstName": "TestFirstName",
+  "lastName" : "testLastName",
+  "role": "TestRole"
+}
+
+> {%
+    client.test("Request executed successfully", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    })
+
+    client.test("Is Hal resource" , () => {
+        client.assert(response.contentType.mimeType === "application/hal+json", "This is not an HAL Resouce")
+    })
+
+    client.test("Is well recorded", () => {
+        client.assert(response.body.firstName === "TestFirstName", "It is not well recorded")
+    })
+%}
