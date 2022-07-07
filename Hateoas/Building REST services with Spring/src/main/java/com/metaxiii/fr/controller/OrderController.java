@@ -1,102 +1,89 @@
 package com.metaxiii.fr.controller;
 
-import com.metaxiii.fr.assembler.OrderModelAssembler;
-import com.metaxiii.fr.enums.Status;
-import com.metaxiii.fr.exception.OrderNotFoundException;
-import com.metaxiii.fr.model.Order;
-import com.metaxiii.fr.repository.OrderRepository;
+import com.metaxiii.fr.assembler.OrderAssembler;
+import com.metaxiii.fr.creator.OrderCreator;
+import com.metaxiii.fr.dto.OrderDTO;
+import com.metaxiii.fr.entity.Order;
+import com.metaxiii.fr.exception.DatabindingException;
+import com.metaxiii.fr.exception.OrderException;
+import com.metaxiii.fr.input.OrderInput;
+import com.metaxiii.fr.model.OrderModel;
+import com.metaxiii.fr.service.OrderService;
+import lombok.AllArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.mediatype.problem.Problem;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static com.metaxiii.fr.exception.OrderErrorCode.ORDER_NOT_FOUND;
 
 @RestController
+@AllArgsConstructor
 public class OrderController {
 
-    private final OrderRepository orderRepository;
-    private final OrderModelAssembler assembler;
-
-    OrderController(OrderRepository orderRepository, OrderModelAssembler assembler) {
-
-        this.orderRepository = orderRepository;
-        this.assembler = assembler;
-    }
+    private final OrderAssembler assembler;
+    private final OrderService service;
+    private final OrderCreator creator;
+    private final Validator validator;
 
     @GetMapping("/orders")
-    public CollectionModel<EntityModel<Order>> all() {
-
-        List<EntityModel<Order>> orders = orderRepository.findAll().stream() //
-                .map(assembler::toModel) //
-                .toList();
-
-        return CollectionModel.of(orders, //
-                linkTo(methodOn(OrderController.class).all()).withSelfRel());
+    public ResponseEntity<CollectionModel<OrderModel>> orders() {
+        final List<Order> orderEntities = service.findAll();
+        return new ResponseEntity<>(assembler.toCollectionModel(orderEntities), HttpStatus.OK);
     }
 
     @GetMapping("/orders/{id}")
-    public EntityModel<Order> one(@PathVariable Long id) {
-
-        Order order = orderRepository.findById(id) //
-                .orElseThrow(() -> new OrderNotFoundException(id));
-
-        return assembler.toModel(order);
+    public ResponseEntity<OrderModel> order(@PathVariable UUID id) {
+        Order order = service.findById(id)
+                .orElseThrow(() -> new OrderException(ORDER_NOT_FOUND, id));
+        return new ResponseEntity<>(assembler.toModel(order), HttpStatus.OK);
     }
 
-    @PostMapping("/orders")
-    ResponseEntity<EntityModel<Order>> newOrder(@RequestBody Order order) {
-
-        order.setStatus(Status.IN_PROGRESS);
-        Order newOrder = orderRepository.save(order);
-
-        return ResponseEntity //
-                .created(linkTo(methodOn(OrderController.class).one(newOrder.getId())).toUri()) //
-                .body(assembler.toModel(newOrder));
+    @PostMapping(value = "orders", consumes = "application/json")
+    public ResponseEntity<OrderModel> order(@RequestBody @Valid OrderInput input) {
+        final Order saved = service.save(creator.toDomain(input));
+        return new ResponseEntity<>(assembler.toModel(saved), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/orders/{id}/cancel")
-    public ResponseEntity<?> cancel(@PathVariable Long id) {
-
-        Order order = orderRepository.findById(id) //
-                .orElseThrow(() -> new OrderNotFoundException(id));
-
-        if (order.getStatus() == Status.IN_PROGRESS) {
-            order.setStatus(Status.CANCELLED);
-            return ResponseEntity.ok(assembler.toModel(orderRepository.save(order)));
-        }
-
-        return ResponseEntity //
-                .status(HttpStatus.METHOD_NOT_ALLOWED) //
-                .header(HttpHeaders.CONTENT_TYPE, MediaTypes.HTTP_PROBLEM_DETAILS_JSON_VALUE) //
-                .body(Problem.create() //
-                        .withTitle("Method not allowed") //
-                        .withDetail("You can't cancel an order that is in the " + order.getStatus() + " status"));
+    @PatchMapping(value = "orders/{id}", consumes = "application/json")
+    public ResponseEntity<OrderModel> order(@PathVariable UUID id,
+                                            @RequestBody @Valid OrderDTO orderDTO) {
+        final Optional<Order> originalOrder = service.findById(id);
+        final Order saved = originalOrder.map(order -> {
+            this.validateDTO(orderDTO);
+            order.setStatus(orderDTO.getStatus());
+            return service.save(order);
+        }).orElseThrow(() -> {
+            throw new OrderException(ORDER_NOT_FOUND, id);
+        });
+        return new ResponseEntity<>(assembler.toModel(saved), HttpStatus.ACCEPTED);
     }
 
-    @PutMapping("/orders/{id}/complete")
-    public ResponseEntity<?> complete(@PathVariable Long id) {
 
-        Order order = orderRepository.findById(id) //
-                .orElseThrow(() -> new OrderNotFoundException(id));
+    @DeleteMapping(value = "orders/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable UUID id) {
+        service.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
-        if (order.getStatus() == Status.IN_PROGRESS) {
-            order.setStatus(Status.COMPLETED);
-            return ResponseEntity.ok(assembler.toModel(orderRepository.save(order)));
-        }
-
-        return ResponseEntity //
-                .status(HttpStatus.METHOD_NOT_ALLOWED) //
-                .header(HttpHeaders.CONTENT_TYPE, MediaTypes.HTTP_PROBLEM_DETAILS_JSON_VALUE) //
-                .body(Problem.create() //
-                        .withTitle("Method not allowed") //
-                        .withDetail("You can't complete an order that is in the " + order.getStatus() + " status"));
+    private void validateDTO(final OrderDTO orderDTO) {
+        DataBinder dataBinder = new DataBinder(orderDTO);
+        dataBinder.addValidators(validator);
+        dataBinder.validate();
+        if (dataBinder.getBindingResult().hasErrors())
+            throw new DatabindingException(dataBinder.getBindingResult());
     }
 }
