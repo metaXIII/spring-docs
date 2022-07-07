@@ -1,75 +1,91 @@
 package com.metaxiii.fr.controller;
 
-import com.metaxiii.fr.assembler.EmployeeModelAssembler;
+import com.metaxiii.fr.assembler.EmployeeAssembler;
+import com.metaxiii.fr.creator.EmployeeCreator;
+import com.metaxiii.fr.dto.EmployeeDTO;
+import com.metaxiii.fr.entity.Employee;
+import com.metaxiii.fr.exception.DatabindingException;
 import com.metaxiii.fr.exception.EmployeeException;
-import com.metaxiii.fr.model.Employee;
-import com.metaxiii.fr.repository.EmployeeRepository;
+import com.metaxiii.fr.input.EmployeeInput;
+import com.metaxiii.fr.model.EmployeeModel;
+import com.metaxiii.fr.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.DataBinder;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.metaxiii.fr.exception.EmployeeErrorCode.EMPLOYEE_NOT_FOUND;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequiredArgsConstructor
 public class EmployeeController {
-    private final EmployeeRepository repository;
-    private final EmployeeModelAssembler assembler;
+    private final EmployeeAssembler assembler;
+    private final EmployeeCreator creator;
+    private final Validator validator;
+    private final EmployeeService service;
 
     @GetMapping("employees")
-    public CollectionModel<EntityModel<Employee>> getAllEmployees() {
-        List<EntityModel<Employee>> employees = repository.findAll()
-                .stream()
-                .map(assembler::toModel)
-                .toList();
-        return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).getAllEmployees()).withSelfRel());
-    }
-
-    @PostMapping("employees")
-    public ResponseEntity<EntityModel<Employee>> newEmployee(@RequestBody Employee employee) {
-        EntityModel<Employee> entityModel = assembler.toModel(repository.save(employee));
-        assembler.toModel(repository.save(employee));
-        return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+    public ResponseEntity
+            <CollectionModel<EmployeeModel>> getAllEmployees() {
+        final List<Employee> employees = service.findAll();
+        return new ResponseEntity<>(assembler.toCollectionModel(employees), HttpStatus.OK);
     }
 
     @GetMapping("employees/{id}")
-    public EntityModel<Employee> getEmployee(@PathVariable long id) {
-        return repository.findById(id)
-                .map(assembler::toModel)
-                .orElseThrow(
-                        () -> new EmployeeException(EMPLOYEE_NOT_FOUND, id));
+    public ResponseEntity<EmployeeModel> getEmployee(@PathVariable UUID id) {
+        final Employee employeeEntity = service.findById(id)
+                .orElseThrow(() -> new EmployeeException(EMPLOYEE_NOT_FOUND, id));
+        final EmployeeModel employeeModel = assembler.toModel(employeeEntity);
+        return new ResponseEntity<>(employeeModel, HttpStatus.OK);
     }
 
-    @PutMapping("employees/{id}")
-    public ResponseEntity<EntityModel<Employee>> replaceEmployee(@RequestBody Employee put, @PathVariable long id) {
-        EntityModel<Employee> employeeEntityModel = assembler.toModel(repository.findById(id)
-                .map(employee -> {
-                    employee.setLastName(put.getLastName());
-                    employee.setFirstName(put.getFirstName());
-                    employee.setRole(put.getRole());
-                    return repository.save(employee);
-                })
-                .orElseGet(() -> {
-                    put.setId(id);
-                    return repository.save(put);
-                }));
-        return ResponseEntity
-                .created(employeeEntityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(employeeEntityModel);
+
+    @PostMapping(value = "employees", consumes = "application/json")
+    public ResponseEntity<EmployeeModel> newEmployee(@RequestBody @Valid EmployeeInput input) {
+        final Employee employee = service.save(creator.toDomain(input));
+        return new ResponseEntity<>(assembler.toModel(employee), HttpStatus.CREATED);
+    }
+
+    @PatchMapping(value = "employees/{id}", consumes = "application/json")
+    public ResponseEntity<EmployeeModel> replaceEmployee(@PathVariable UUID id,
+                                                         @RequestBody @Valid EmployeeDTO employeeDTO) {
+        final Optional<Employee> originalEmployee = service.findById(id);
+        final Employee saved = originalEmployee.map(employee -> {
+            this.validateDTO(employeeDTO);
+            employee.setFirstName(employee.getFirstName());
+            employee.setLastName(employee.getLastName());
+            return service.save(employee);
+        }).orElseThrow(() -> {
+            throw new EmployeeException(EMPLOYEE_NOT_FOUND, id);
+        });
+        return new ResponseEntity<>(assembler.toModel(saved), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("employees/{id}")
-    ResponseEntity<Void> deleteEmployee(@PathVariable long id) {
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    ResponseEntity<Void> deleteEmployee(@PathVariable UUID id) {
+        service.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private void validateDTO(final EmployeeDTO employeeDTO) {
+        DataBinder dataBinder = new DataBinder(employeeDTO);
+        dataBinder.addValidators(validator);
+        dataBinder.validate();
+        if (dataBinder.getBindingResult().hasErrors())
+            throw new DatabindingException(dataBinder.getBindingResult());
     }
 }
