@@ -1,3 +1,5 @@
+def project1 = 'mvn clean install -f "./Hateoas/Building a Hypermedia-Driven RESTful Web Service"'
+def project2 = 'mvn clean install -f "./Hateoas/Building REST services with Spring"'
 pipeline {
     agent any
     tools {
@@ -10,12 +12,12 @@ pipeline {
                 git url: 'https://github.com/metaXIII/spring-docs.git', credentialsId: '1'
                 script {
                 if (isUnix()) {
-                    sh 'mvn clean install -f "./Hateoas/Building a Hypermedia-Driven RESTful Web Service"'
-                    sh 'mvn clean install -f "./Hateoas/Building REST services with Spring"'
+                    sh "${project1}"
+                    sh "${project2}"
                 }
                  else {
-                    bat 'mvn clean install -f ".\\Hateoas\\Building a Hypermedia-Driven RESTful Web Service"'
-                    bat 'mvn clean install -f ".\\Hateoas/Building REST services with Spring"'
+                    bat "${project1}"
+                    bat "${project2}"
                 }
             }
         }
