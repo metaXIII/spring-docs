@@ -18,7 +18,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - name: Build with Maven
+      - name: Building a Hypermedia-Driven RESTful Web Service
         run: mvn -B package --file "./Hateoas/Building a Hypermedia-Driven RESTful Web Service"
-      - name: Build with Maven2
+      - name: Building REST services with Spring
         run: mvn -B package --file "./Hateoas/Building REST services with Spring"
