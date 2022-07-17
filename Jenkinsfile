@@ -6,21 +6,23 @@ pipeline {
         maven "maven"
     }
     stages {
-        stage('Build') {
+        stage("checkout") {
             steps {
-                // Get some code from a GitHub repository
-                git url: 'https://github.com/metaXIII/spring-docs.git', credentialsId: '1'
-                script {
-                if (isUnix()) {
-                    sh "${project1}"
-                    sh "${project2}"
-                }
-                 else {
-                    bat "${project1}"
-                    bat "${project2}"
-                }
+                checkout scm
             }
         }
+        stage('Build') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "${project1}"
+                        sh "${project2}"
+                    } else {
+                        bat "${project1}"
+                        bat "${project2}"
+                    }
+                }
+            }
             post {
                 // If Maven was able to run the tests, even if some of the test
                 // failed, record the test results and archive the jar file.
