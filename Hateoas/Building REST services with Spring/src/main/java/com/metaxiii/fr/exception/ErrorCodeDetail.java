@@ -1,6 +1,7 @@
 package com.metaxiii.fr.exception;
 
 public interface ErrorCodeDetail {
-    String getCodeDetail();
+    int getCodeDetails();
+
     String getMessage();
 }

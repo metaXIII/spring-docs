@@ -60,7 +60,7 @@ public class OrderController {
 
     @PatchMapping(value = "orders/{id}", consumes = "application/json")
     public ResponseEntity<OrderModel> order(@PathVariable UUID id,
-                                            @RequestBody @Valid OrderDTO orderDTO) {
+                                            @RequestBody OrderDTO orderDTO) {
         final Optional<Order> originalOrder = service.findById(id);
         final Order saved = originalOrder.map(order -> {
             this.validateDTO(orderDTO);

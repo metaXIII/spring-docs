@@ -62,7 +62,7 @@ public class EmployeeController {
 
     @PatchMapping(value = "employees/{id}", consumes = "application/json")
     public ResponseEntity<EmployeeModel> replaceEmployee(@PathVariable UUID id,
-                                                         @RequestBody @Valid EmployeeDTO employeeDTO) {
+                                                         @RequestBody EmployeeDTO employeeDTO) {
         final Optional<Employee> originalEmployee = service.findById(id);
         final Employee saved = originalEmployee.map(employee -> {
             this.validateDTO(employeeDTO);
