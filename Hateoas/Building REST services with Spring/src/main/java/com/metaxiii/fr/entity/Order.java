@@ -10,7 +10,6 @@ import lombok.Setter;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class Order {
     @Id
     @Type(type = "org.hibernate.type.UUIDCharType")
-    @GeneratedValue
     private UUID id;
 
     private String description;

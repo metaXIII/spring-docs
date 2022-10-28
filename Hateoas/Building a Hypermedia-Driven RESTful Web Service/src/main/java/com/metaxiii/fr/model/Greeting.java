@@ -2,17 +2,25 @@ package com.metaxiii.fr.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import org.springframework.hateoas.RepresentationModel;
 
+@Getter
 public class Greeting extends RepresentationModel<Greeting> {
     private final String content;
 
-    @JsonCreator //Signals how Jackson can create an instance of this POJO
-    public Greeting(@JsonProperty("content") String content) { //@JsonProperty => Marks the field into which Jackson should put this constructor argument
+    @JsonCreator
+    public Greeting(@JsonProperty("content") String content) {
         this.content = content;
     }
 
-    public String getContent() {
-        return this.content;
+    @Override
+    public boolean equals(final Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

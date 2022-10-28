@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
@@ -25,9 +27,14 @@ import java.util.UUID;
 public class Employee {
     @Id
     @Type(type = "org.hibernate.type.UUIDCharType")
-    @GeneratedValue
     private UUID id;
+
+    @Column(name = "firstname")
     private String firstName;
+
+    @Column(name = "lastname")
     private String lastName;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
 }

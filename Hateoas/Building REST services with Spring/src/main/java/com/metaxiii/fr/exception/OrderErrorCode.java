@@ -1,17 +1,21 @@
 package com.metaxiii.fr.exception;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum OrderErrorCode implements ErrorCodeDetail {
-    ORDER_NOT_FOUND("Order {0} not found");
+    ORDER_NOT_FOUND("Order {0} not found", 404);
 
-    @Getter
     private final String message;
+    private final int codeStatus;
 
     @Override
-    public String getCodeDetail() {
-        return name();
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public int getCodeDetails() {
+        return codeStatus;
     }
 }
