@@ -1,17 +1,16 @@
 package com.metaxiii.fr.entity;
 
 import com.metaxiii.fr.enums.Status;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.UUID;
 
 @Entity
@@ -23,7 +22,6 @@ import java.util.UUID;
 @Table(name = "CUSTOMER_ORDER")
 public class Order {
     @Id
-    @Type(type = "org.hibernate.type.UUIDCharType")
     private UUID id;
 
     private String description;
