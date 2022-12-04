@@ -9,6 +9,7 @@ import com.metaxiii.fr.exception.EmployeeException;
 import com.metaxiii.fr.input.EmployeeInput;
 import com.metaxiii.fr.model.EmployeeModel;
 import com.metaxiii.fr.service.EmployeeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
