@@ -7,11 +7,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmployeeTransformer implements DomainCreator<Employee, EmployeeDTO> {
-    @Override
-    public Employee toDomain(EmployeeDTO employeeDTO) {
-        return Employee.builder()
-                .firstName(employeeDTO.getFirstName())
-                .lastName(employeeDTO.getLastName())
-                .build();
-    }
+
+  @Override
+  public Employee toDomain(EmployeeDTO employeeDTO) {
+    return Employee.builder().firstName(employeeDTO.getFirstName()).lastName(employeeDTO.getLastName()).build();
+  }
 }

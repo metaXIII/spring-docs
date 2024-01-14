@@ -7,15 +7,13 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
-
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -25,15 +23,16 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "employee")
 public class Employee {
-    @Id
-    private UUID id;
 
-    @Column(name = "firstname")
-    private String firstName;
+  @Id
+  private UUID id;
 
-    @Column(name = "lastname")
-    private String lastName;
+  @Column(name = "firstname")
+  private String firstName;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+  @Column(name = "lastname")
+  private String lastName;
+
+  @Enumerated(EnumType.STRING)
+  private Role role;
 }

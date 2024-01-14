@@ -5,10 +5,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum Role {
-    DEV("développeur"),
-    BURGLAR("Burglar"),
-    THIEF("thief");
+  DEV("développeur"),
+  BURGLAR("Burglar"),
+  THIEF("thief");
 
-    @Getter
-    private final String position;
+  @Getter
+  private final String position;
 }

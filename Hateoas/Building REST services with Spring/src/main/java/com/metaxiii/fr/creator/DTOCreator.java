@@ -5,5 +5,5 @@ package com.metaxiii.fr.creator;
  * @param <D> DTO
  */
 public interface DTOCreator<E, D> {
-    D toDTO(final E e);
+  D toDTO(final E e);
 }

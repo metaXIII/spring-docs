@@ -16,20 +16,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiExceptionHandler {
-    @ExceptionHandler(OrderException.class)
-    public ResponseEntity<String> handleServiceException(final OrderException exception) {
-        final ErrorCodeDetail details = exception.getDetails();
-        return ResponseEntity.status(HttpStatus.valueOf(details.getCodeDetails())).body(exception.getMessage());
-    }
 
-    @ExceptionHandler(EmployeeException.class)
-    public ResponseEntity<String> handleServiceException(final EmployeeException exception) {
-        final ErrorCodeDetail details = exception.getDetails();
-        return ResponseEntity.status(HttpStatus.valueOf(details.getCodeDetails())).body(exception.getMessage());
-    }
+  @ExceptionHandler(OrderException.class)
+  public ResponseEntity<String> handleServiceException(final OrderException exception) {
+    final ErrorCodeDetail details = exception.getDetails();
+    return ResponseEntity.status(HttpStatus.valueOf(details.getCodeDetails())).body(exception.getMessage());
+  }
 
-    @ExceptionHandler(DatabindingException.class)
-    public ResponseEntity<String> handleServiceException(final DatabindingException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
-    }
+  @ExceptionHandler(EmployeeException.class)
+  public ResponseEntity<String> handleServiceException(final EmployeeException exception) {
+    final ErrorCodeDetail details = exception.getDetails();
+    return ResponseEntity.status(HttpStatus.valueOf(details.getCodeDetails())).body(exception.getMessage());
+  }
+
+  @ExceptionHandler(DatabindingException.class)
+  public ResponseEntity<String> handleServiceException(final DatabindingException exception) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+  }
 }

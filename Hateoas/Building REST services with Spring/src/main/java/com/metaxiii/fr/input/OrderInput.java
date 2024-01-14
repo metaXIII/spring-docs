@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class OrderInput {
-    private String description;
-    private Status status;
+
+  private String description;
+  private Status status;
 }

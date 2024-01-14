@@ -1,19 +1,18 @@
 package com.metaxiii.fr.service;
 
 import com.metaxiii.fr.entity.Employee;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface EmployeeService {
-    List<Employee> findAll();
+  void delete(final UUID id);
 
-    Optional<Employee> findById(final UUID id);
+  List<Employee> findAll();
 
-    Employee save(final Employee entity);
+  Optional<Employee> findById(final UUID id);
 
-    Employee update(final UUID id, final Employee employee);
+  Employee save(final Employee entity);
 
-    void delete(final UUID id);
+  Employee update(final UUID id, final Employee employee);
 }
