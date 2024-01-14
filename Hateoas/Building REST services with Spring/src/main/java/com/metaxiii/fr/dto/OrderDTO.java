@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderDTO {
-    @NotNull(message = "status could not be null or empty")
-    private Status status;
+
+  @NotNull(message = "status could not be null or empty")
+  private Status status;
 }

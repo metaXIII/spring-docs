@@ -17,98 +17,94 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EmployeeControllerTest {
 
-    @Autowired
-    private WebTestClient client;
+  @Autowired
+  private WebTestClient client;
 
-    @Test
-    void getAllEmployees() {
-        client
-                .get()
-                .uri("employees")
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBodyList(EmployeeModel.class);
-    }
+  @Test
+  void deleteEmployee() {
+    client.delete().uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80").exchange().expectStatus().isNoContent();
+  }
 
-    @Test
-    void getEmployee() {
-        client.get()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody(EmployeeModel.class);
-    }
+  @Test
+  void getAllEmployees() {
+    client.get().uri("employees").exchange().expectStatus().isOk().expectBodyList(EmployeeModel.class);
+  }
 
-    @Test
-    void getEmployeeIsNotFound() {
-        client.get()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd81")
-                .exchange()
-                .expectStatus()
-                .isNotFound()
-                .expectBody()
-                .consumeWith(System.out::println);
-    }
+  @Test
+  void getEmployee() {
+    client
+      .get()
+      .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectBody(EmployeeModel.class);
+  }
 
-    @Test
-    void newEmployee() {
-        client.post()
-                .uri("employees")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(EmployeeInput.builder().firstName("f").lastName("l").role(Role.DEV).build())
-                .exchange()
-                .expectStatus()
-                .isCreated()
-                .expectBody(EmployeeModel.class);
-    }
+  @Test
+  void getEmployeeIsNotFound() {
+    client
+      .get()
+      .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd81")
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+      .expectBody()
+      .consumeWith(System.out::println);
+  }
 
-    @Test
-    void replaceEmployeeIsBadRequest() {
-        client.patch()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(EmployeeDTO.builder().firstName("f2").lastName("l2").build())
-                .exchange()
-                .expectStatus()
-                .isBadRequest()
-                .expectBody()
-                .consumeWith(System.out::println);
-    }
+  @Test
+  void newEmployee() {
+    client
+      .post()
+      .uri("employees")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(EmployeeInput.builder().firstName("f").lastName("l").role(Role.DEV).build())
+      .exchange()
+      .expectStatus()
+      .isCreated()
+      .expectBody(EmployeeModel.class);
+  }
 
-    @Test
-    void replaceEmployeeIsnotFound() {
-        client.patch()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd81")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(EmployeeDTO.builder().firstName("f211").lastName("l211").build())
-                .exchange()
-                .expectStatus()
-                .isNotFound()
-                .expectBody()
-                .consumeWith(System.out::println);
-    }
+  @Test
+  void replaceEmployee() {
+    client
+      .patch()
+      .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(EmployeeDTO.builder().firstName("f211").lastName("l211").build())
+      .exchange()
+      .expectStatus()
+      .isAccepted()
+      .expectBody()
+      .consumeWith(System.out::println);
+  }
 
-    @Test
-    void replaceEmployee() {
-        client.patch()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(EmployeeDTO.builder().firstName("f211").lastName("l211").build())
-                .exchange()
-                .expectStatus()
-                .isAccepted()
-                .expectBody()
-                .consumeWith(System.out::println);
-    }
+  @Test
+  void replaceEmployeeIsBadRequest() {
+    client
+      .patch()
+      .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(EmployeeDTO.builder().firstName("f2").lastName("l2").build())
+      .exchange()
+      .expectStatus()
+      .isBadRequest()
+      .expectBody()
+      .consumeWith(System.out::println);
+  }
 
-    @Test
-    void deleteEmployee() {
-        client.delete()
-                .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd80")
-                .exchange()
-                .expectStatus()
-                .isNoContent();
-    }
+  @Test
+  void replaceEmployeeIsnotFound() {
+    client
+      .patch()
+      .uri("employees/329fc021-4cdd-4f72-882c-423f5d86bd81")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(EmployeeDTO.builder().firstName("f211").lastName("l211").build())
+      .exchange()
+      .expectStatus()
+      .isNotFound()
+      .expectBody()
+      .consumeWith(System.out::println);
+  }
 }

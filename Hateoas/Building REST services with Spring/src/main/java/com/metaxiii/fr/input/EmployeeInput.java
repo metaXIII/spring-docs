@@ -7,7 +7,8 @@ import lombok.Getter;
 @Builder
 @Getter
 public class EmployeeInput {
-    private String firstName;
-    private String lastName;
-    private Role role;
+
+  private String firstName;
+  private String lastName;
+  private Role role;
 }

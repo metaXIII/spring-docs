@@ -5,5 +5,5 @@ package com.metaxiii.fr.creator;
  * @param <M> Model
  */
 public interface DomainCreator<E, M> {
-    E toDomain(final M m);
+  E toDomain(final M m);
 }

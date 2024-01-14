@@ -1,19 +1,16 @@
 package com.metaxiii.fr.service;
 
 import com.metaxiii.fr.entity.Order;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
-    List<Order> findAll();
+  void deleteById(UUID id);
 
-    Optional<Order> findById(UUID id);
+  List<Order> findAll();
 
-    Order save(Order order);
+  Optional<Order> findById(UUID id);
 
-    Order update(UUID id, Order order);
-
-    void deleteById(UUID id);
+  Order save(Order order);
 }

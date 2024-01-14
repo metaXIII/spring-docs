@@ -10,11 +10,12 @@ import lombok.Setter;
 @Setter
 @Builder
 public class EmployeeDTO {
-    @NotNull
-    @Size(min = 3, max = 25)
-    private final String firstName;
 
-    @NotNull
-    @Size(min = 3, max = 25)
-    private final String lastName;
+  @NotNull
+  @Size(min = 3, max = 25)
+  private final String firstName;
+
+  @NotNull
+  @Size(min = 3, max = 25)
+  private final String lastName;
 }
