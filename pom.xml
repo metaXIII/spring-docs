@@ -43,6 +43,7 @@
         <module>report</module>
         <module>Hateoas/Building a Hypermedia-Driven RESTful Web Service</module>
         <module>Hateoas/Building REST services with Spring</module>
+        <module>Batch/batch-processing</module>
     </modules>
 
     <build>
